@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.db.session import engine, Base, SessionLocal
 from app.db.seed import seed_data
-from app.api import spots  # <-- IMPORT YOUR NEW ROUTER
+from app.api import spots, reservations
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,8 +17,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, title="Parking Reservation API")
 
-# <-- HOOK UP THE ROUTER HERE
 app.include_router(spots.router, prefix="/api/v1", tags=["Parking Spots"])
+app.include_router(reservations.router, prefix="/api/v1", tags=["Reservations"])
 
 @app.get("/")
 def read_root():
