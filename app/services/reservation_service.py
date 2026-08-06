@@ -46,3 +46,29 @@ def create_reservation(db: Session, reservation_data: ReservationCreate):
     db.refresh(new_reservation)
 
     return new_reservation
+
+def get_reservations_for_spot(db: Session, spot_id: int):
+    # First, make sure the spot actually exists
+    spot = db.query(ParkingSpot).filter(ParkingSpot.id == spot_id).first()
+    if not spot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Parking spot not found."
+        )
+
+    # If it exists, return every reservation attached to it
+    return db.query(Reservation).filter(Reservation.spot_id == spot_id).all()
+
+
+def cancel_reservation(db: Session, reservation_id: int):
+    # Find the specific reservation the user wants to delete
+    reservation = db.query(Reservation).filter(Reservation.id == reservation_id).first()
+    if not reservation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Reservation not found."
+        )
+
+    # Throw it in the trash and permanently save that decision
+    db.delete(reservation)
+    db.commit()
