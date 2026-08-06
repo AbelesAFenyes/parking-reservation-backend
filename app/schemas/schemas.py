@@ -19,6 +19,8 @@ class ReservationCreate(BaseModel):
     license_plate: str
     start_time: datetime
     end_time: datetime
+    is_electric_vehicle: bool = False
+    has_disabled_permit: bool = False
 
 # What we send back to the user after a successful booking
 class ReservationResponse(BaseModel):

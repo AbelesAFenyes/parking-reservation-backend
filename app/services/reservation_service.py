@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from app.models.models import Reservation, ParkingSpot
 from app.schemas.schemas import ReservationCreate
+from app.models.models import SpotType
 
 
 def create_reservation(db: Session, reservation_data: ReservationCreate):
@@ -18,6 +19,19 @@ def create_reservation(db: Session, reservation_data: ReservationCreate):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Parking spot not found."
+        )
+
+    # Rule 2.5 The parking lot has to be the correct type
+    if spot.spot_type == SpotType.ELECTRIC and not reservation_data.is_electric_vehicle:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This spot is reserved for electric vehicles only."
+        )
+
+    if spot.spot_type == SpotType.DISABLED and not reservation_data.has_disabled_permit:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This spot requires a valid disabled parking permit."
         )
 
     # Rule 3: The Hitbox Collision (Overlap Check)
