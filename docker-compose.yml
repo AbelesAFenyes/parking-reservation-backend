@@ -1,2 +1,29 @@
+version: '3.8'
+
 services:
-  
+  # The Database Container
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: parking_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # The FastAPI Application Container
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # This is the magic link! It passes the exact login details to session.py
+      - DATABASE_URL=postgresql://admin:adminpassword@db:5432/parking_db
+    depends_on:
+      - db
+
+# This ensures the database data survives even if the container is turned off
+volumes:
+  postgres_data:
